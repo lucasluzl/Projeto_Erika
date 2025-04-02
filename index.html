@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tocantins - Pontos Turísticos</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #006341; /* Verde do Tocantins */
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .map-container {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .map {
+            width: 100%;
+            height: 600px;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Brazil_Tocantins_location_map.svg/500px-Brazil_Tocantins_location_map.svg.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+        }
+        
+        .point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s;
+        }
+        
+        .point:hover {
+            transform: translate(-50%, -50%) scale(1.5);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+        
+        .point[data-point="palmas"] {
+            top: 30%;
+            left: 40%;
+        }
+        
+        .point[data-point="jalapao"] {
+            top: 60%;
+            left: 70%;
+        }
+        
+        .point[data-point="cantao"] {
+            top: 20%;
+            left: 20%;
+        }
+        
+        .point[data-point="pequizeiro"] {
+            top: 50%;
+            left: 50%;
+        }
+        
+        .point[data-point="taquarucu"] {
+            top: 70%;
+            left: 30%;
+        }
+        
+        .info-panel {
+            width: 350px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            max-height: 640px;
+        }
+        
+        .point-info {
+            display: none;
+        }
+        
+        .point-info.active {
+            display: block;
+        }
+        
+        .point-info h2 {
+            color: #006341;
+            margin-top: 0;
+            border-bottom: 2px solid #006341;
+            padding-bottom: 10px;
+        }
+        
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .gallery img, .gallery video {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .add-content {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eee;
+            border-radius: 5px;
+        }
+        
+        .add-content h3 {
+            margin-top: 0;
+        }
+        
+        textarea, input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #006341;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #004d33;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        
+        .modal-content img, .modal-content video {
+            max-width: 100%;
+            max-height: 80vh;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .info-panel {
+                width: auto;
+                border-left: none;
+                border-top: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Pontos Turísticos do Tocantins</h1>
+        <p>Explore e adicione informações sobre os principais destinos</p>
+    </header>
+    
+    <div class="container">
+        <div class="map-container">
+            <div class="map">
+                <div class="point" data-point="palmas" title="Palmas"></div>
+                <div class="point" data-point="jalapao" title="Jalapão"></div>
+                <div class="point" data-point="cantao" title="Parque do Cantão"></div>
+                <div class="point" data-point="pequizeiro" title="Lagoa do Pequizeiro"></div>
+                <div class="point" data-point="taquarucu" title="Taquaruçu"></div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="point-info" id="palmas-info">
+                <h2>Palmas</h2>
+                <p>Capital do Tocantins, conhecida por sua arquitetura moderna e belas praias fluviais.</p>
+                <div class="gallery" id="palmas-gallery">
+                    <!-- Conteúdo será adicionado dinamicamente -->
+                </div>
+                <div class="add-content">
+                    <h3>Adicionar Conteúdo</h3>
+                    <textarea id="palmas-text" placeholder="Adicione uma descrição..."></textarea>
+                    <input type="file" id="palmas-media" accept="image/*, video/*" multiple>
+                    <button onclick="addContent('palmas')">Adicionar</button>
+                </div>
+            </div>
+            
+            <div class="point-info" id="jalapao-info">
+                <h2>Jalapão</h2>
+                <p>Conhecido como o deserto das águas, com dunas, cachoeiras e fervedouros.</p>
+                <div class="gallery" id="jalapao-gallery">
+                    <!-- Conteúdo será adicionado dinamicamente -->
+                </div>
+                <div class="add-content">
+                    <h3>Adicionar Conteúdo</h3>
+                    <textarea id="jalapao-text" placeholder="Adicione uma descrição..."></textarea>
+                    <input type="file" id="jalapao-media" accept="image/*, video/*" multiple>
+                    <button onclick="addContent('jalapao')">Adicionar</button>
+                </div>
+            </div>
+            
+            <div class="point-info" id="cantao-info">
+                <h2>Parque do Cantão</h2>
+                <p>Área de preservação com rica biodiversidade e belas paisagens naturais.</p>
+                <div class="gallery" id="cantao-gallery">
+                    <!-- Conteúdo será adicionado dinamicamente -->
+                </div>
+                <div class="add-content">
+                    <h3>Adicionar Conteúdo</h3>
+                    <textarea id="cantao-text" placeholder="Adicione uma descrição..."></textarea>
+                    <input type="file" id="cantao-media" accept="image/*, video/*" multiple>
+                    <button onclick="addContent('cantao')">Adicionar</button>
+                </div>
+            </div>
+            
+            <div class="point-info" id="pequizeiro-info">
+                <h2>Lagoa do Pequizeiro</h2>
+                <p>Lagoa de águas cristalinas cercada por vegetação típica do cerrado.</p>
+                <div class="gallery" id="pequizeiro-gallery">
+                    <!-- Conteúdo será adicionado dinamicamente -->
+                </div>
+                <div class="add-content">
+                    <h3>Adicionar Conteúdo</h3>
+                    <textarea id="pequizeiro-text" placeholder="Adicione uma descrição..."></textarea>
+                    <input type="file" id="pequizeiro-media" accept="image/*, video/*" multiple>
+                    <button onclick="addContent('pequizeiro')">Adicionar</button>
+                </div>
+            </div>
+            
+            <div class="point-info" id="taquarucu-info">
+                <h2>Taquaruçu</h2>
+                <p>Distrito de Palmas com cachoeiras e trilhas ecológicas.</p>
+                <div class="gallery" id="taquarucu-gallery">
+                    <!-- Conteúdo será adicionado dinamicamente -->
+                </div>
+                <div class="add-content">
+                    <h3>Adicionar Conteúdo</h3>
+                    <textarea id="taquarucu-text" placeholder="Adicione uma descrição..."></textarea>
+                    <input type="file" id="taquarucu-media" accept="image/*, video/*" multiple>
+                    <button onclick="addContent('taquarucu')">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="media-modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content" id="modal-content">
+            <!-- Conteúdo será injetado aqui -->
+        </div>
+    </div>
+    
+    <script>
+        // Dados iniciais (simulando um banco de dados)
+        const pointsData = {
+            palmas: {
+                description: "Capital do Tocantins, conhecida por sua arquitetura moderna e belas praias fluviais.",
+                media: []
+            },
+            jalapao: {
+                description: "Conhecido como o deserto das águas, com dunas, cachoeiras e fervedouros.",
+                media: []
+            },
+            cantao: {
+                description: "Área de preservação com rica biodiversidade e belas paisagens naturais.",
+                media: []
+            },
+            pequizeiro: {
+                description: "Lagoa de águas cristalinas cercada por vegetação típica do cerrado.",
+                media: []
+            },
+            taquarucu: {
+                description: "Distrito de Palmas com cachoeiras e trilhas ecológicas.",
+                media: []
+            }
+        };
+        
+        // Carregar dados do localStorage se existirem
+        function loadData() {
+            const savedData = localStorage.getItem('tocantinsPointsData');
+            if (savedData) {
+                Object.assign(pointsData, JSON.parse(savedData));
+            }
+            
+            // Atualizar as descrições iniciais
+            for (const point in pointsData) {
+                const textarea = document.getElementById(`${point}-text`);
+                if (textarea) {
+                    textarea.value = pointsData[point].description;
+                }
+            }
+            
+            // Carregar mídias
+            renderAllGalleries();
+        }
+        
+        // Salvar dados no localStorage
+        function saveData() {
+            localStorage.setItem('tocantinsPointsData', JSON.stringify(pointsData));
+        }
+        
+        // Renderizar todas as galerias
+        function renderAllGalleries() {
+            for (const point in pointsData) {
+                renderGallery(point);
+            }
+        }
+        
+        // Renderizar a galeria de um ponto específico
+        function renderGallery(point) {
+            const gallery = document.getElementById(`${point}-gallery`);
+            gallery.innerHTML = '';
+            
+            pointsData[point].media.forEach((mediaItem, index) => {
+                const mediaElement = mediaItem.type === 'image' ? 
+                    `<img src="${mediaItem.url}" alt="${mediaItem.caption}" onclick="openModal('${point}', ${index})">` :
+                    `<video controls onclick="openModal('${point}', ${index}, event)">
+                        <source src="${mediaItem.url}" type="video/mp4">
+                    </video>`;
+                
+                const caption = mediaItem.caption ? `<p>${mediaItem.caption}</p>` : '';
+                
+                gallery.innerHTML += `
+                    <div class="gallery-item">
+                        ${mediaElement}
+                        ${caption}
+                    </div>
+                `;
+            });
+        }
+        
+        // Adicionar conteúdo a um ponto
+        function addContent(point) {
+            const textarea = document.getElementById(`${point}-text`);
+            const fileInput = document.getElementById(`${point}-media`);
+            
+            // Atualizar descrição
+            pointsData[point].description = textarea.value;
+            
+            // Adicionar novas mídias
+            if (fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+                        pointsData[point].media.push({
+                            type: mediaType,
+                            url: e.target.result,
+                            caption: ''
+                        });
+                        
+                        renderGallery(point);
+                        saveData();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                renderGallery(point);
+                saveData();
+            }
+            
+            // Limpar o input de arquivo
+            fileInput.value = '';
+        }
+        
+        // Abrir modal com mídia em tamanho maior
+        function openModal(point, index, event = null) {
+            if (event && event.target.tagName === 'VIDEO') {
+                return; // Não abrir modal para vídeos que já estão sendo reproduzidos
+            }
+            
+            const modal = document.getElementById('media-modal');
+            const modalContent = document.getElementById('modal-content');
+            const mediaItem = pointsData[point].media[index];
+            
+            if (mediaItem.type === 'image') {
+                modalContent.innerHTML = `<img src="${mediaItem.url}" alt="${mediaItem.caption}">`;
+            } else {
+                modalContent.innerHTML = `
+                    <video controls autoplay>
+                        <source src="${mediaItem.url}" type="video/mp4">
+                    </video>
+                `;
+            }
+            
+            if (mediaItem.caption) {
+                modalContent.innerHTML += `<p class="modal-caption">${mediaItem.caption}</p>`;
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Fechar modal
+        function closeModal() {
+            document.getElementById('media-modal').style.display = 'none';
+        }
+        
+        // Inicializar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Configurar eventos dos pontos no mapa
+            const points = document.querySelectorAll('.point');
+            const infoPanels = document.querySelectorAll('.point-info');
+            
+            points.forEach(point => {
+                point.addEventListener('click', function() {
+                    const pointName = this.getAttribute('data-point');
+                    
+                    // Esconder todos os painéis de informação
+                    infoPanels.forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    
+                    // Mostrar o painel correspondente
+                    document.getElementById(`${pointName}-info`).classList.add('active');
+                });
+            });
+            
+            // Mostrar o primeiro painel por padrão
+            if (infoPanels.length > 0) {
+                infoPanels[0].classList.add('active');
+            }
+            
+            // Fechar modal ao clicar fora do conteúdo
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('media-modal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
